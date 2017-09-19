@@ -1,0 +1,24 @@
+{
+  "image": "images/test_background.png",
+  "initial_pos": [300, 0],
+  "initial_direction": "down",
+  "blockers": [
+  {"pos": [49, 431], "size": [32, 48], "image": null},
+  {"pos": [87, 384], "size": [80, 48], "image": null},
+  {"pos": [173, 336], "size": [300, 48], "image": null},
+  {"pos": [438, 236], "size": [80, 120], "image": null},
+  {"pos": [438, 0], "size": [1, 235], "image": null},
+  {"pos": [38, 0], "size": [1, 48], "image": null},
+  {"pos": [40, 48], "size": [36, 1], "image": null},
+  {"pos": [76, 48], "size": [1, 86], "image": null},
+  {"pos": [0, 138], "size": [78, 54], "image": null}
+  ],
+  "NPCs": [
+  ],
+  "mobs": [
+  ],
+  "stones": [
+  ],
+  "portals": [
+  ]
+}
