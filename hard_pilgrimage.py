@@ -27,6 +27,8 @@ class Hard_Pilgrimage():
         self.interlocutor = None
         self.dialog_sequence = []
         self.dialog_index = 0
+        self.answer = 0
+        self.old_pos = None
 
     def main_loop(self):
         '''Main loop method. It will call the method associated with the correspondent state'''
@@ -171,6 +173,14 @@ class Hard_Pilgrimage():
         if self.NPCs:
             for npc in self.NPCs:
                 npc.draw(self.screen)
+            if pygame.K_a in self.KEYSEDGE:
+                i = self.main_char.checkcollisions(self.NPCs)
+                if i != 1:
+                    self.NPCs[i].rotate(self.main_char.pos)
+                    self.interlocutor = self.NPCs[i]
+                    self.dialog_sequence = self.NPCs[i].dialog_sequence
+                    self.current_state = 'DIALOG_STATE'
+                    return
         if self.mobs:
             for mob in self.mobs:
                 mob.draw(self.screen)
@@ -205,12 +215,35 @@ class Hard_Pilgrimage():
             return
 
         if self.dialog_index % 2:
-            self.main_char.dialog(self.screen, self.dialog_sequence[self.dialog_index], self.text_font)
-        else:
-            self.interlocutor.dialog(self.screen, self.dialog_sequence[self.dialog_index], self.text_font)
+            pos = self.main_char.dialog(self.screen, self.dialog_sequence[self.dialog_index], self.text_font)
+            if type(self.dialog_sequence[self.dialog_index]) == list:
+                for key in self.KEYSEDGE:
+                    if key == pygame.K_DOWN:
+                        if self.arrow_pos[1] < pos[1] + 24*len(self.dialog_sequence[self.dialog_index]):
+                            self.arrow_pos = (self.arrow_pos[0], self.arrow_pos[1] + 24)
+                    if key == pygame.K_UP:
+                        if self.arrow_pos[1] > pos[1]:
+                            self.arrow_pos = (self.arrow_pos[0], self.arrow_pos[1] - 24)
+                    elif key == pygame.K_SPACE or key == pygame.K_RETURN:
 
-        if len(self.KEYSEDGE) > 0:
+                        self.answer = (self.arrow_pos[1] - pos[1])/24
+                        self.dialog_index = self.dialog_index + 1
+                        return
+
+                vertices = [self.arrow_pos, (self.arrow_pos[0], self.arrow_pos[1]+24), (self.arrow_pos[0]+12, self.arrow_pos[1]+12)]
+                pygame.draw.polygon(self.screen, (255, 0, 0), vertices)
+        else:
+            pos = self.interlocutor.dialog(self.screen, self.dialog_sequence[self.dialog_index], self.text_font, self.answer)
+            if len(self.KEYSEDGE) > 0 and type(self.dialog_sequence[self.dialog_index]) == list:
+                self.dialog_index = self.dialog_index + 1
+
+        if len(self.KEYSEDGE) > 0 and type(self.dialog_sequence[self.dialog_index]) != list:
             self.dialog_index = self.dialog_index + 1
+            if self.dialog_index < len(self.dialog_sequence) and type(self.dialog_sequence[self.dialog_index]) == list:
+                if self.dialog_index % 2:
+                    self.arrow_pos = self.main_char.dialog_pos(self.screen)
+                else:
+                    self.arrow_pos = self.interlocutor.dialog_pos(self.screen)
 
         if len(self.dialog_sequence) < self.dialog_index + 1:
             self.dialog_index = 0

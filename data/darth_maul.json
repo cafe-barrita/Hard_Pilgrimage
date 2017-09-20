@@ -1,0 +1,13 @@
+{
+  "sprite": "images/maul_sprite.png",
+  "portrait": "images/maul_portrait.png",
+  "sprite_width": 31,
+  "sprite_height": 32,
+  "dialog": [
+  "Esto es una prueba de NPC",
+  ["Y que hace?", "Y a mi que?"],
+  ["Cosas...", "Pero hace cosas..."],
+  null,
+  "Cosas de NPC"
+  ]
+}

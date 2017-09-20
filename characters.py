@@ -71,7 +71,7 @@ class Main_Character(pygame.sprite.Sprite):
              else:
                  pass
 
-        if self.checkcollisions(blockers) != -1:
+        if self.checkcollisions(blockers) != -1 or self.checkcollisions(npcs) != -1:
             self.pos = [prev_x, prev_y]
 
         self.rect.move(self.pos)
@@ -113,11 +113,29 @@ class Main_Character(pygame.sprite.Sprite):
             self.animation = 0
 
     def dialog(self, screen, dialog, font):
-         
-         textbox = pygame.Surface((200, 100))
-         textbox.fill((0, 0, 0))
-         blit_text(textbox, dialog, (0, 0), font, (255, 255, 255))
 
+         if type(dialog) ==list:
+             aux = None
+             for line in dialog:
+                 if not aux:
+                     aux = '  ' + line
+                 else:
+                     aux = aux + '\n  ' + line
+             dialog = aux
+         textbox = pygame.Surface((200, 100))
+         textbox.fill((255, 255, 255))
+         blit_text(textbox, dialog, (0, 0), font, (0, 0, 0))
+
+         pos = self.dialog_pos(screen)
+
+         if self.portrait != None:
+             pygame.draw.rect(screen, (255, 255, 255), (pos[0] -32, pos[1], 32, 32))
+             screen.blit(self.portrait, (pos[0] -32, pos[1], 32, 32))
+         screen.blit(textbox, pos)
+
+         return pos
+
+    def dialog_pos(self, screen):
          if self.pos[1] < screen.get_size()[1]/2:
              pos_y = self.pos[1] + self.sprite_size[1]
          else:
@@ -129,11 +147,7 @@ class Main_Character(pygame.sprite.Sprite):
                  pos_x = pos_x + 32
          else:
              pos_x = self.pos[0] + self.sprite_size[0] - 200
-
-         if self.portrait != None:
-             pygame.draw.rect(screen, (0, 0, 0), (pos_x -32, pos_y, 32, 32))
-             screen.blit(self.portrait, (pos_x -32, pos_y, 32, 32))
-         screen.blit(textbox, (pos_x, pos_y))
+         return (pos_x, pos_y)
 
 class NonPlayableCharacter(pygame.sprite.Sprite):
 
@@ -147,35 +161,74 @@ class NonPlayableCharacter(pygame.sprite.Sprite):
         else:
             self.portrait = None
         self.size = (char_info["sprite_width"], char_info["sprite_height"])
+        self.dialog_sequence = char_info["dialog"]
         self.direction = direction
-        self.rect = pygame.Rect(self.pos, self.sprite_size)
+        self.rect = pygame.Rect(self.pos, self.size)
         self.size = self.rect.size
 
     def draw(self, screen):
-        screen.blit(self.image, self.rect)
+        screen.blit(self.image, self.rect, self.get_sprite())
 
-    def dialog(self, screen, dialog, font):
-         
-         textbox = pygame.Surface(100, 200)
-         textbox.fill((0, 0, 0))
-         blit_text(textbox, dialog, (0, 0), font, (255, 255, 255))
+    def get_sprite(self):
+        if self.direction == 'down':
+            y = 0
+        elif self.direction == 'left':
+            y = self.size[1]
+        elif self.direction == 'right':
+            y = 2*self.size[1]
+        elif self.direction == 'up':
+            y = 3*self.size[1]
 
-         if self.pos[1] < screen.size[1]/2:
-             pos_y = self.pos[1] + self.sprite_size[1]
+        x = self.size[0]
+
+        return (x, y, self.size[0], self.size[1])
+
+    def dialog(self, screen, dialog, font, answer):
+
+         if type(dialog) == list:
+             dialog = dialog[answer]
+         textbox = pygame.Surface((200, 100))
+         textbox.fill((255, 255, 255))
+         blit_text(textbox, dialog, (0, 0), font, (0, 0, 0))
+
+         pos = self.dialog_pos(screen)
+
+         if self.portrait != None:
+             pygame.draw.rect(screen, (255, 255, 255), (pos[0] -32, pos[1], 32, 32))
+             screen.blit(self.portrait, (pos[0] -32, pos[1], 32, 32))
+         screen.blit(textbox, pos)
+
+         return pos
+
+    def dialog_pos(self, screen):
+
+         if self.pos[1] < screen.get_size()[1]/2:
+             pos_y = self.pos[1] + self.size[1]
          else:
-             pos_y = self.pos[1] - 200
+             pos_y = self.pos[1] - 100
 
-         if self.pos[0] < screen.size[0]/2:
+         if self.pos[0] < screen.get_size()[0]/2:
              pos_x = self.pos[0]
              if self.portrait != None:
                  pos_x = pos_x + 32
          else:
-             pos_x = self.pos[0] + self.sprite_size[0] - 100
+             pos_x = self.pos[0] + self.size[0] - 200
+         return (pos_x, pos_y)
 
-         if self.portrait != None:
-             pygame.draw.rect(screen, (0, 0, 0), (pos_x -32, pos_y, 32, 32))
-             screen.blit(self.portrait, (pos_x -32, pos_y, 32, 32))
-         screen.blit(textbox, (pos_x, pos_y))
+    def rotate(self, pos):
+         dif_x = self.pos[0] - pos[0]
+         dif_y = self.pos[1] - pos[1]
+         if abs(dif_y) < self.size[1] -1:
+             if dif_x > 0:
+                 self.direction = 'left'
+             else:
+                 self.direction = 'right'
+         else:
+             if dif_y > 0:
+                 self.direction = 'up'
+             else:
+                 self.direction = 'down'
+
 
 class Mob(pygame.sprite.Sprite):
 
