@@ -15,6 +15,7 @@ class Hard_Pilgrimage():
         self.portals = []
         self.current_state = 'MAIN_TITLE'
         self.KEYSPRESSED = []
+        self.KEYSEDGE = []
         self.saved_games = []
         self.current_map = None
         self.background = pygame.Surface(screen.get_size())
@@ -36,33 +37,36 @@ class Hard_Pilgrimage():
                 sys.exit(0)
             if event.type == KEYDOWN:
                 self.KEYSPRESSED.append(event.key)
+                self.KEYSEDGE.append(event.key)
             if event.type == KEYUP:
                 self.KEYSPRESSED.remove(event.key)
             else:
                 pass
 
-            if self.current_state == 'MAIN_TITLE':
-                self.main_title()
-            elif self.current_state == 'NEW_GAME':
-                self.new_game()
-            elif self.current_state == 'LOAD_GAME':
-                self.load_game()
-            elif self.current_state == 'MAP_STATE':
-                self.map_state()
-            elif self.current_state == 'DIALOG_STATE':
-                self.dialog_state()
-            elif self.current_state == 'MENU_STATE':
-                self.menu_state()
-            elif self.current_state == 'CREDITS_STATE':
+        if self.current_state == 'MAIN_TITLE':
+            self.main_title()
+        elif self.current_state == 'NEW_GAME':
+            self.new_game()
+        elif self.current_state == 'LOAD_GAME':
+            self.load_game()
+        elif self.current_state == 'MAP_STATE':
+            self.map_state()
+        elif self.current_state == 'DIALOG_STATE':
+            self.dialog_state()
+        elif self.current_state == 'MENU_STATE':
+            self.menu_state()
+        elif self.current_state == 'CREDITS_STATE':
                 self.roll_credits()
-            elif self.current_state == 'SAVE_GAME':
-                self.save_game()
-            elif self.current_state == 'CONTROLS_STATE':
-                self.control_state()            
-            else:
-                self.background = pygame.Surface(self.screen.get_size())
-                self.background.fill((0, 0, 0))
-                self.error()
+        elif self.current_state == 'SAVE_GAME':
+            self.save_game()
+        elif self.current_state == 'CONTROLS_STATE':
+            self.control_state()            
+        else:
+            self.background = pygame.Surface(self.screen.get_size())
+            self.background.fill((0, 0, 0))
+            self.error()
+
+        del self.KEYSEDGE[:]
 
     def main_title(self):
         self.screen.blit(self.background, (0,0))
@@ -71,7 +75,7 @@ class Hard_Pilgrimage():
         blit_text(self.screen, 'Nueva partida', (100, 300), self.text_font, (255, 255, 255))
         blit_text(self.screen, 'Cargar partida', (375, 300), self.text_font, (255, 255, 255))
 
-        for key in self.KEYSPRESSED:
+        for key in self.KEYSEDGE:
             if key == pygame.K_LEFT:
                 if self.arrow_pos[0] == 350:
                     self.arrow_pos = (75, 300)
@@ -103,7 +107,8 @@ class Hard_Pilgrimage():
     def new_game(self):
         self.main_char = Main_Character('data/duro.json')
         self.load_map('data/test_background.json')
-        self.current_state = 'MAP_STATE'
+        self.dialog_sequence = [None, "Soy Alfredo Duro y voy a ir andando a Cardiff", None, "Por el Madrid!!!!"]
+        self.current_state = 'DIALOG_STATE'
 
     def load_game(self):
         
@@ -112,10 +117,11 @@ class Hard_Pilgrimage():
         for game in self.saved_games:
             blit_text(self.screen, game, (200, 100+i), self.subtitle_font, (255, 255, 255))
             i = i + 40
+        blit_text(self.screen, 'Volver', (200, 100+i), self.subtitle_font, (255, 255, 255))
 
-        for key in self.KEYSPRESSED:
+        for key in self.KEYSEDGE:
             if key == pygame.K_DOWN:
-                if self.arrow_pos[1] < 60 + i:
+                if self.arrow_pos[1] < 100 + i:
                     self.arrow_pos = (160, self.arrow_pos[1]+40)
             elif key == pygame.K_UP:
                 if self.arrow_pos[1] > 100:
@@ -137,6 +143,8 @@ class Hard_Pilgrimage():
                         self.current_state = 'MAP_STATE'
                         return
                     i = i +40
+                self.arrow_pos = (75, 300)
+                self.current_state = 'MAIN_TITLE'
             else:
                 pass
 
@@ -145,7 +153,7 @@ class Hard_Pilgrimage():
 
     def map_state(self):
 
-        if pygame.K_RETURN in self.KEYSPRESSED:
+        if pygame.K_RETURN in self.KEYSEDGE:
             self.background = pygame.Surface(self.screen.get_size())
             self.background.fill((0, 0, 0))
             self.arrow_pos = (160, 100)
@@ -153,8 +161,8 @@ class Hard_Pilgrimage():
             return
 
         self.screen.blit(self.background, (0,0))
-        self.main_char.draw(self.screen)
         self.main_char.move_char(self.KEYSPRESSED, self.screen.get_size(), self.blockers, self.NPCs)
+        self.main_char.draw(self.screen)
 
         if self.blockers:
             for blocker in self.blockers:
@@ -191,12 +199,17 @@ class Hard_Pilgrimage():
         for portal in self.portals:
             portal.draw(self.screen)
 
+        if not self.dialog_sequence[self.dialog_index]:
+            self.dialog_index = self.dialog_index + 1
+            return
+
         if self.dialog_index % 2:
             self.main_char.dialog(self.screen, self.dialog_sequence[self.dialog_index], self.text_font)
         else:
             self.interlocutor.dialog(self.screen, self.dialog_sequence[self.dialog_index], self.text_font)
 
-        self.dialog_index = self.dialog_index + 1
+        if len(self.KEYSEDGE) > 0:
+            self.dialog_index = self.dialog_index + 1
 
         if len(self.dialog_sequence) < self.dialog_index + 1:
             self.dialog_index = 0
@@ -205,10 +218,10 @@ class Hard_Pilgrimage():
     def menu_state(self):
         #TODO change state according to option selected.
         self.screen.blit(self.background, (0, 0))
-        menu_options = "Back to game \nMain Title \nShow controls \nSave game \nExit"
+        menu_options = "Volver al juego \nPantalla principal \nListar controles \nGuardar Partida \nSalir del juego"
         blit_text(self.screen, menu_options, (200, 100), self.subtitle_font, (255, 255, 255))
 
-        for key in self.KEYSPRESSED:
+        for key in self.KEYSEDGE:
             if key == pygame.K_DOWN:
                 if self.arrow_pos[1] < 280:
                     self.arrow_pos = (160, self.arrow_pos[1]+45)
@@ -260,11 +273,11 @@ class Hard_Pilgrimage():
             blit_text(self.screen, game, (200, 100+i), self.subtitle_font, (255, 255, 255))
             i = i + 40
         if len(self.saved_games) < 5:
-            blit_text(self.screen, 'New', (200, 100+i), self.subtitle_font, (255, 255, 255))
+            blit_text(self.screen, 'Nuevo', (200, 100+i), self.subtitle_font, (255, 255, 255))
             i = i + 40
-        blit_text(self.screen, 'Back', (200, 100+i), self.subtitle_font, (255, 255, 255))
+        blit_text(self.screen, 'Volver', (200, 100+i), self.subtitle_font, (255, 255, 255))
 
-        for key in self.KEYSPRESSED:
+        for key in self.KEYSEDGE:
             if key == pygame.K_DOWN:
                 if self.arrow_pos[1] < 100 + i:
                     self.arrow_pos = (160, self.arrow_pos[1]+40)

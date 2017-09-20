@@ -1,4 +1,5 @@
 import pygame, math, json
+from tools import blit_text
 from pygame.locals import *
 
 class Main_Character(pygame.sprite.Sprite):
@@ -19,7 +20,7 @@ class Main_Character(pygame.sprite.Sprite):
         self.direction = 'down'
         self.rect = pygame.Rect(self.pos, self.sprite_size)
         self.size = self.rect.size
-        self.animation = char_info["sprite_height"]
+        self.animation = char_info["sprite_width"]
         self.life = 100
         self.stones = 0
         self.money = 0
@@ -37,14 +38,13 @@ class Main_Character(pygame.sprite.Sprite):
         prev_x = self.pos[0]
         prev_y = self.pos[1]
 
-        #if pygame.K_LEFT in keys_pressed or pygame.K_RIGHT in keys_pressed or pygame.K_UP in keys_pressed or pygame.K_DOWN in keys_pressed:
-        #    self.walk_animation()
-        #else:
-        #    self.animation = self.sprite_size[0]
-        #print self.animation
+        if pygame.K_LEFT in keys_pressed or pygame.K_RIGHT in keys_pressed or pygame.K_UP in keys_pressed or pygame.K_DOWN in keys_pressed:
+            self.walk_animation()
+        else:
+            self.animation = self.sprite_size[0]
 
         for key in keys_pressed:
-             print self.pos
+             #print self.pos
              if key == pygame.K_LEFT:
                  self.pos[0] = self.pos[0] - pixels
                  if self.pos[0] < 0:
@@ -68,6 +68,8 @@ class Main_Character(pygame.sprite.Sprite):
                  if self.pos[1] > (screen_size[1] - self.sprite_size[1]):
                      self.pos[1] = screen_size[1] - self.sprite_size[1]
                  self.direction = 'down'
+             else:
+                 pass
 
         if self.checkcollisions(blockers) != -1:
             self.pos = [prev_x, prev_y]
@@ -110,6 +112,29 @@ class Main_Character(pygame.sprite.Sprite):
         elif self.animation == self.sprite_size[0]:
             self.animation = 0
 
+    def dialog(self, screen, dialog, font):
+         
+         textbox = pygame.Surface((200, 100))
+         textbox.fill((0, 0, 0))
+         blit_text(textbox, dialog, (0, 0), font, (255, 255, 255))
+
+         if self.pos[1] < screen.get_size()[1]/2:
+             pos_y = self.pos[1] + self.sprite_size[1]
+         else:
+             pos_y = self.pos[1] - 100
+
+         if self.pos[0] < screen.get_size()[0]/2:
+             pos_x = self.pos[0]
+             if self.portrait != None:
+                 pos_x = pos_x + 32
+         else:
+             pos_x = self.pos[0] + self.sprite_size[0] - 200
+
+         if self.portrait != None:
+             pygame.draw.rect(screen, (0, 0, 0), (pos_x -32, pos_y, 32, 32))
+             screen.blit(self.portrait, (pos_x -32, pos_y, 32, 32))
+         screen.blit(textbox, (pos_x, pos_y))
+
 class NonPlayableCharacter(pygame.sprite.Sprite):
 
     def __init__(self, pos, direction, char_json):
@@ -128,6 +153,29 @@ class NonPlayableCharacter(pygame.sprite.Sprite):
 
     def draw(self, screen):
         screen.blit(self.image, self.rect)
+
+    def dialog(self, screen, dialog, font):
+         
+         textbox = pygame.Surface(100, 200)
+         textbox.fill((0, 0, 0))
+         blit_text(textbox, dialog, (0, 0), font, (255, 255, 255))
+
+         if self.pos[1] < screen.size[1]/2:
+             pos_y = self.pos[1] + self.sprite_size[1]
+         else:
+             pos_y = self.pos[1] - 200
+
+         if self.pos[0] < screen.size[0]/2:
+             pos_x = self.pos[0]
+             if self.portrait != None:
+                 pos_x = pos_x + 32
+         else:
+             pos_x = self.pos[0] + self.sprite_size[0] - 100
+
+         if self.portrait != None:
+             pygame.draw.rect(screen, (0, 0, 0), (pos_x -32, pos_y, 32, 32))
+             screen.blit(self.portrait, (pos_x -32, pos_y, 32, 32))
+         screen.blit(textbox, (pos_x, pos_y))
 
 class Mob(pygame.sprite.Sprite):
 
