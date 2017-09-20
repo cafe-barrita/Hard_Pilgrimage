@@ -96,7 +96,7 @@ class Main_Character(pygame.sprite.Sprite):
         for obstacle in obstacles:
             dif_x = self.pos[0] - obstacle.pos[0]
             dif_y = self.pos[1] - obstacle.pos[1]
-            if (dif_x > self.sprite_size[0] and dif_x < obstacle.size[0]) and (dif_y > self.sprite_size[1] and dif_y < obstacle.size[1]):
+            if (dif_x > -self.sprite_size[0] and dif_x < obstacle.size[0]) and (dif_y > -self.sprite_size[1] and dif_y < obstacle.size[1]):
                 return i
             i = i +1
         return -1

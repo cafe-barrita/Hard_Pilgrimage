@@ -167,6 +167,7 @@ class Hard_Pilgrimage():
         if self.blockers:
             for blocker in self.blockers:
                 blocker.draw(self.screen)
+                #pygame.draw.rect(self.screen, (255, 0, 0), pygame.Rect(blocker.pos, blocker.size))
         if self.NPCs:
             for npc in self.NPCs:
                 npc.draw(self.screen)
