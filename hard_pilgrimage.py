@@ -61,7 +61,9 @@ class Hard_Pilgrimage():
         elif self.current_state == 'SAVE_GAME':
             self.save_game()
         elif self.current_state == 'CONTROLS_STATE':
-            self.control_state()            
+            self.control_state()       
+        elif self.current_state == 'GAME_OVER':
+            self.game_over() 
         else:
             self.background = pygame.Surface(self.screen.get_size())
             self.background.fill((0, 0, 0))
@@ -194,6 +196,12 @@ class Hard_Pilgrimage():
             hitting_mob = self.main_char.checkcollisions(self.mobs)
             if hitting_mob != -1:
                 self.main_char.hit_by_mob(self.mobs[hitting_mob])
+                if self.main_char.life < 1:
+                    self.current_state = 'GAME_OVER'
+                    self.arrow_pos = (75, 300)
+                    self.background = pygame.Surface(self.screen.get_size())
+                    self.background.fill((0, 0, 0))
+                    return
         if self.stones:
             for stone in self.stones:
                 stone.draw(self.screen)
@@ -323,7 +331,12 @@ class Hard_Pilgrimage():
 
     def roll_credits(self):
         '''Display credits and return to main title'''
-        pass
+        credits = 'Programming by Juan Manuel Sanchez\nImages by Juan Manuel Sanchez and stolen from the internet\nMusic stolen from the internet\nTrip to Cardiff by Alfredo Duro\nLA DUODECIMA by Real Madrid'
+        self.screen.blit(self.background, (0, 0))
+        blit_text(self.screen, credits, (10, 10), self.subtitle_font, (255, 255, 255))
+        if len(self.KEYSEDGE):
+            self.current_state = 'MAIN_TITLE'
+            self.arrow_pos = (75, 300)
 
     def save_game(self):
 
@@ -376,6 +389,12 @@ class Hard_Pilgrimage():
     def control_state(self):
         '''Method correspondent with the controls menu. Meant to display keys used. Possibility to extend functionality by personalizing controls'''
         pass
+
+    def game_over(self):
+        self.screen.blit(self.background, (0,0))
+        blit_text(self.screen, 'Game Over', (150, 200), self.title_font, (255, 0, 0)) 
+        if len(self.KEYSEDGE):
+            self.current_state = 'MAIN_TITLE' 
 
     def load_map(self, map_json):
         map_data = json.load(open(map_json))

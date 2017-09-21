@@ -47,7 +47,9 @@ class Game_Event():
         elif self.type == 'update_protagonist':
             self.char_json = event_dict['char_json']
         elif self.type == 'restore_health':
-            self.char_json = event_dict['char_json']
+            pass
+        elif self.type == 'end_game':
+            pass
         else:
             self.game.current_state = 'ERROR_STATE'
 
@@ -60,6 +62,8 @@ class Game_Event():
             self.update_protagonist()
         elif self.type == 'restore_health':
             self.game.main_char.life = 100
+        elif self.type == 'end_game':
+            self.end_game()
 
     def start_dialog(self):
         self.game.current_state = 'DIALOG_STATE'
@@ -87,3 +91,7 @@ class Game_Event():
         self.size = self.rect.size
         self.animation = char_info["sprite_width"]
 
+    def end_game(self):
+        self.game.background = pygame.Surface(self.game.screen.get_size())
+        self.game.background.fill((0, 0, 0))
+        self.game.current_state = 'CREDITS_STATE'

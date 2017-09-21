@@ -32,5 +32,6 @@
   {"pos": [248, 300], "size": [24, 16], "image": "images/stone_resource.png"}
   ],
   "portals": [
+  {"pos": [300, 0], "size": [36, 2], "image": null, "next_map": "data/end_game.json"}
   ]
 }

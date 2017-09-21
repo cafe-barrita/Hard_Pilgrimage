@@ -22,7 +22,8 @@ class Main_Character(pygame.sprite.Sprite):
         self.direction = 'down'
         self.rect = pygame.Rect(self.pos, self.sprite_size)
         self.size = self.rect.size
-        self.animation = char_info["sprite_width"]
+        self.walk_animation = char_info["sprite_width"]
+        self.throw_animation = 0
         self.life = 100
         self.stones = 0
         self.money = 0
@@ -41,9 +42,11 @@ class Main_Character(pygame.sprite.Sprite):
         prev_y = self.pos[1]
 
         if pygame.K_LEFT in keys_pressed or pygame.K_RIGHT in keys_pressed or pygame.K_UP in keys_pressed or pygame.K_DOWN in keys_pressed:
-            self.walk_animation()
+            self.walk()
         else:
-            self.animation = self.sprite_size[0]
+            self.walk_animation = self.sprite_size[0]
+
+        self.throw()
 
         for key in keys_pressed:
              #print self.pos
@@ -81,6 +84,7 @@ class Main_Character(pygame.sprite.Sprite):
 
     def throw_stone(self):
         self.thrown_stones.append(Thrown_Stone(self.pos, self.direction))
+        self.throw(True)
         self.stones -= 1
 
     def get_sprite(self):
@@ -93,7 +97,7 @@ class Main_Character(pygame.sprite.Sprite):
         elif self.direction == 'up':
             y = 3*self.sprite_size[1]
 
-        x = self.animation
+        x = self.walk_animation + self.throw_animation
 
         return (x, y, self.sprite_size[0], self.sprite_size[1])
 
@@ -140,13 +144,22 @@ class Main_Character(pygame.sprite.Sprite):
 
         return mob_hit
 
-    def walk_animation(self):
-        if self.animation == 0:
-            self.animation = 2*self.sprite_size[0]
-        elif self.animation == 2*self.sprite_size[0]:
-            self.animation = 0
-        elif self.animation == self.sprite_size[0]:
-            self.animation = 0
+    def walk(self):
+        if self.walk_animation == 0:
+            self.walk_animation = 2*self.sprite_size[0]
+        elif self.walk_animation == 2*self.sprite_size[0]:
+            self.walk_animation = 0
+        elif self.walk_animation == self.sprite_size[0]:
+            self.walk_animation = 0
+
+    def throw(self, new_throw = False):
+        if self.throw_animation == 0:
+            if new_throw:
+                self.throw_animation = 3*self.sprite_size[0]
+        elif self.throw_animation == 3*self.sprite_size[0]:
+            self.throw_animation = 6*self.sprite_size[0]
+        elif self.throw_animation == 6*self.sprite_size[0]:
+            self.throw_animation = 0
 
     def dialog(self, screen, dialog, font):
 

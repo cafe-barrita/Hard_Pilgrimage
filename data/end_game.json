@@ -1,0 +1,19 @@
+{
+  "image": "images/test_background.png",
+  "initial_pos": [0, 0],
+  "initial_direction": "down",
+  "background_music": null,
+  "event": {
+    "type": "end_game"
+  },
+  "blockers": [
+  ],
+  "NPCs": [
+  ],
+  "mobs": [
+  ],
+  "stones": [
+  ],
+  "portals": [
+  ]
+}
