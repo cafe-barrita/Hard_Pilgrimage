@@ -1,5 +1,7 @@
 import pygame, math, json
 from tools import blit_text
+from random import randrange
+from objects import *
 from pygame.locals import *
 
 class Main_Character(pygame.sprite.Sprite):
@@ -77,6 +79,10 @@ class Main_Character(pygame.sprite.Sprite):
         self.rect.move(self.pos)
         self.update()
 
+    def throw_stone(self):
+        self.thrown_stones.append(Thrown_Stone(self.pos, self.direction))
+        self.stones -= 1
+
     def get_sprite(self):
         if self.direction == 'down':
             y = 0
@@ -103,6 +109,36 @@ class Main_Character(pygame.sprite.Sprite):
 
     def draw(self, screen):
         screen.blit(self.image, self.rect, self.get_sprite())
+        screen.blit(self.portrait, (0, 0, 32, 32))
+        #Draw life bar
+        pygame.draw.rect(screen, (255, 0, 0), (34, 2, 100, 4))
+        pygame.draw.rect(screen, (0, 255, 0), (34, 2, self.life, 4))
+
+        font = pygame.font.SysFont('Arial', 10)
+        resources = str(self.stones) + " piedras\n" + str(self.money) + " euros"
+        blit_text(screen, resources, (34, 8), font, (0, 0, 0))
+
+        for stone in self.thrown_stones:
+            stone.draw(screen)
+
+    def update_stones(self, blockers, npcs, mobs):
+        stopped_stones = []
+        mob_hit = -1
+
+        for stone in self.thrown_stones:
+            stone.move()
+            speed = stone.speed
+            stone.checkcollisions(blockers)
+            stone.checkcollisions(npcs)
+            mob_hit = stone.checkcollisions(mobs)
+            if mob_hit != -1:
+                mobs[mob_hit].hit_by_stone(speed)
+            if stone.speed < 1:
+                stopped_stones.append(stone)
+        for stone in stopped_stones:
+            self.thrown_stones.remove(stone)
+
+        return mob_hit
 
     def walk_animation(self):
         if self.animation == 0:
@@ -148,6 +184,15 @@ class Main_Character(pygame.sprite.Sprite):
          else:
              pos_x = self.pos[0] + self.sprite_size[0] - 200
          return (pos_x, pos_y)
+
+    def hit_by_mob(self, mob):
+        self.life -= mob.damage
+        dif_x = self.pos[0] - mob.pos[0]
+        dif_y = self.pos[1] - mob.pos[1]
+        #self.pos = (self.pos[0] - dif_x * mob.damage, self.pos[1] - dif_y * mob.damage)
+        self.pos[0] = self.pos[0] + int((dif_x * 6)/abs(dif_x))
+        self.pos[1] = self.pos[1] + int((dif_y * 6)/abs(dif_y))
+        self.update()
 
 class NonPlayableCharacter(pygame.sprite.Sprite):
 
@@ -218,7 +263,7 @@ class NonPlayableCharacter(pygame.sprite.Sprite):
     def rotate(self, pos):
          dif_x = self.pos[0] - pos[0]
          dif_y = self.pos[1] - pos[1]
-         if abs(dif_y) < self.size[1] -1:
+         if abs(dif_y) < abs(dif_x):
              if dif_x > 0:
                  self.direction = 'left'
              else:
@@ -237,20 +282,160 @@ class Mob(pygame.sprite.Sprite):
         self.pos = pos
         char_info = json.load(open(char_json))
         self.image = pygame.image.load(char_info["sprite"])
-        if char_info["portrait"]:
-            self.portrait = pygame.image.load(char_info["portrait"])
-        else:
-            self.portrait = None
         self.sprite_size = (char_info["sprite_width"], char_info["sprite_height"])
         self.direction = direction
         self.rect = pygame.Rect(self.pos, self.sprite_size)
         self.size = self.rect.size
+        self.speed = char_info["speed"]
+        self.life = char_info["health"]
+        self.health = self.life
+        self.damage = char_info["damage"]
+        self.char_json = char_json
+        if char_info['event'] != None:
+            self.event = Game_Event(char_info['event'])
+        else:
+            self.event = None
+        self.animation = self.size[0]
+
+    def update(self):
+        self.rect.topleft = self.pos
+
+    def move_mob(self, pos, limits, blockers):
+        prev_pos = self.pos
+        if self.distance(pos) < 50:
+            self.animate()
+            self.rotate(pos)
+            dist = 2 * self.speed
+            if self.direction == 'left':
+                self.pos = (self.pos[0] - dist, self.pos[1])
+            elif self.direction == 'right':
+                self.pos = (self.pos[0] + dist, self.pos[1])
+            elif self.direction == 'up':
+                self.pos = (self.pos[0], self.pos[1] - dist)
+            elif self.direction == 'down':
+                self.pos = (self.pos[0], self.pos[1] + dist)            
+        else:
+            still = randrange(0, 2, 1)
+            if not still:
+                self.animate()
+                dir_list = ['left', 'right', 'up', 'down']
+                self.direction = dir_list[randrange(0, 3, 1)]
+                dist = randrange(0, 2, 1)
+                dist = dist * self.speed
+                if self.direction == 'left':
+                    self.pos = (self.pos[0] - dist, self.pos[1])
+                elif self.direction == 'right':
+                    self.pos = (self.pos[0] + dist, self.pos[1])
+                elif self.direction == 'up':
+                    self.pos = (self.pos[0], self.pos[1] - dist)
+                elif self.direction == 'down':
+                    self.pos = (self.pos[0], self.pos[1] + dist)
+            else:
+                self.animation = self.size[0]
+
+        if self.pos[0] < 0 or self.pos[1] < 0 or self.pos[0] > limits[0] -self.size[0] or self.pos[1] > limits[1] -self.size[1] or (self.checkcollisions(blockers) != 1):
+            self.pos = prev_pos
+        self.update()
+
+    def checkcollisions(self, obstacles):
+        i = 0
+        for obstacle in obstacles:
+            dif_x = self.pos[0] - obstacle.pos[0]
+            dif_y = self.pos[1] - obstacle.pos[1]
+            if (dif_x > -self.sprite_size[0] and dif_x < obstacle.size[0]) and (dif_y > -self.sprite_size[1] and dif_y < obstacle.size[1]):
+                return i
+            i = i +1
+        return -1
+
+    def animate(self):
+        if self.animation == 0:
+            self.animation = 2*self.sprite_size[0]
+        elif self.animation == 2*self.sprite_size[0]:
+            self.animation = 0
+        elif self.animation == self.sprite_size[0]:
+            self.animation = 0
+
+    def distance(self, pos):
+        dif_x = self.pos[0] - pos[0]
+        dif_y = self.pos[1] - pos[1]
+        return math.sqrt(dif_x*dif_x + dif_y*dif_y)
+
+    def rotate(self, pos):
+         dif_x = self.pos[0] - pos[0]
+         dif_y = self.pos[1] - pos[1]
+         if abs(dif_y) < abs(dif_x):
+             if dif_x > 0:
+                 self.direction = 'left'
+             else:
+                 self.direction = 'right'
+         else:
+             if dif_y > 0:
+                 self.direction = 'up'
+             else:
+                 self.direction = 'down'
+
+    def draw(self, screen):
+        screen.blit(self.image, self.rect, self.get_sprite())
+        pygame.draw.rect(screen, (255, 0, 0), (self.pos[0], self.pos[1] - 6, self.health, 4))
+        pygame.draw.rect(screen, (0, 255, 0), (self.pos[0], self.pos[1] - 6, self.life, 4))
+
+    def get_sprite(self):
+        if self.direction == 'down':
+            y = 0
+        elif self.direction == 'left':
+            y = self.size[1]
+        elif self.direction == 'right':
+            y = 2*self.size[1]
+        elif self.direction == 'up':
+            y = 3*self.size[1]
+
+        x = self.animation
+
+        return (x, y, self.size[0], self.size[1])
+
+    def hit_by_stone(self, speed):
+        self.life -= speed
+
+class Thrown_Stone(pygame.sprite.Sprite):
+    '''Thrown stones are technically an object but they're associated to a playable character'''
+    def __init__(self, pos, direction):
+        pygame.sprite.Sprite.__init__(self)
+        self.speed = 12
+        self.pos = pos
+        self.direction = direction
+        self.image = pygame.image.load('images/thrown_stone.png')
+        self.sprite_size = (12, 12)
+        self.rect = pygame.Rect(self.pos, self.sprite_size)
+        self.size = self.rect.size
+
+    def update(self):
+        self.rect.topleft = self.pos
+
+    def move(self):
+        self.image = pygame.transform.rotate(self.image, self.speed)
+        dist = self.speed
+        if self.direction == 'left':
+            self.pos = (self.pos[0] - dist, self.pos[1])
+        elif self.direction == 'right':
+            self.pos = (self.pos[0] + dist, self.pos[1])
+        elif self.direction == 'up':
+            self.pos = (self.pos[0], self.pos[1] - dist)
+        elif self.direction == 'down':
+            self.pos = (self.pos[0], self.pos[1] + dist)
+
+        self.update()
+        self.speed -= 1
+
+    def checkcollisions(self, obstacles):
+        i = 0
+        for obstacle in obstacles:
+            dif_x = self.pos[0] - obstacle.pos[0]
+            dif_y = self.pos[1] - obstacle.pos[1]
+            if (dif_x > -self.sprite_size[0] and dif_x < obstacle.size[0]) and (dif_y > -self.sprite_size[1] and dif_y < obstacle.size[1]):
+                self.speed = 0
+                return i
+            i = i +1
+        return -1
 
     def draw(self, screen):
         screen.blit(self.image, self.rect)
-
-class ThrownStone(pygame.sprite.Sprite):
-    '''Thrown stones are technically an object but they're associated to a playable charachter'''
-    def __init__(self):
-        pygame.sprite.Sprite.__init__(self)
-        pass

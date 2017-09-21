@@ -1,13 +1,13 @@
 {
   "image": "images/test_background.png",
-  "initial_pos": [300, 0],
-  "initial_direction": "down",
+  "initial_pos": [0, 193],
+  "initial_direction": "right",
   "background_music": null,
   "event": {
     "type": "dialog",
     "interlocutor": null,
     "dialog": 
-      [null, "Soy Alfredo Duro y voy a ir andando a Cardiff", null, "Por el Madrid!!!!"]
+      [null, "Esos pajaros parecen peligrosos", null, "Podria utilizar esas piedras para espantarlos"]
   },
   "blockers": [
   {"pos": [49, 431], "size": [32, 48], "image": null},
@@ -21,13 +21,16 @@
   {"pos": [0, 138], "size": [78, 53], "image": null}
   ],
   "NPCs": [
-  {"pos": [324, 302], "size": [31, 32], "direction": "down", "json": "data/darth_maul.json"}
   ],
   "mobs": [
+  {"pos": [300, 89], "direction": "down", "json": "data/bird_mob.json"}
   ],
   "stones": [
+  {"pos": [89, 200], "size": [24, 16], "image": "images/stone_resource.png"},
+  {"pos": [93, 208], "size": [24, 16], "image": "images/stone_resource.png"},
+  {"pos": [326, 300], "size": [24, 16], "image": "images/stone_resource.png"},
+  {"pos": [248, 300], "size": [24, 16], "image": "images/stone_resource.png"}
   ],
   "portals": [
-  {"pos": [0, 193], "size": [2, 36], "image": null, "next_map": "data/mob_test.json"}
   ]
 }

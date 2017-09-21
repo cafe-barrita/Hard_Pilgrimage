@@ -1,0 +1,9 @@
+{
+  "sprite": "images/bird_sprite.png",
+  "sprite_width": 32,
+  "sprite_height": 32,
+  "health": 10,
+  "speed": 1,
+  "damage": 1,
+  "event": null
+}

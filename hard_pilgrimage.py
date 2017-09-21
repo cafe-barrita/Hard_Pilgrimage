@@ -28,7 +28,6 @@ class Hard_Pilgrimage():
         self.dialog_sequence = []
         self.dialog_index = 0
         self.answer = 0
-        self.old_pos = None
 
     def main_loop(self):
         '''Main loop method. It will call the method associated with the correspondent state'''
@@ -109,8 +108,8 @@ class Hard_Pilgrimage():
     def new_game(self):
         self.main_char = Main_Character('data/duro.json')
         self.load_map('data/test_background.json')
-        self.dialog_sequence = [None, "Soy Alfredo Duro y voy a ir andando a Cardiff", None, "Por el Madrid!!!!"]
-        self.current_state = 'DIALOG_STATE'
+        #self.dialog_sequence = [None, "Soy Alfredo Duro y voy a ir andando a Cardiff", None, "Por el Madrid!!!!"]
+        #self.current_state = 'DIALOG_STATE'
 
     def load_game(self):
         
@@ -141,7 +140,11 @@ class Hard_Pilgrimage():
                         self.main_char.pos = saved_data['pos']
                         self.main_char.direction = saved_data['direction']
                         self.main_char.update()
-                        self.mobs = saved_data['mobs']
+                        self.mobs = []
+                        for mob_dict in saved_data['mobs']:
+                            mob = Mob(mob_dict['pos'], mob_dict['direction'], mob_dict['char_json'])
+                            mob.life = mob_dict['life']
+                            self.mobs.append(mob)
                         self.current_state = 'MAP_STATE'
                         return
                     i = i +40
@@ -163,6 +166,9 @@ class Hard_Pilgrimage():
             return
 
         self.screen.blit(self.background, (0,0))
+        if pygame.K_s in self.KEYSEDGE:
+            if self.main_char.stones > 0:
+                self.main_char.throw_stone()
         self.main_char.move_char(self.KEYSPRESSED, self.screen.get_size(), self.blockers, self.NPCs)
         self.main_char.draw(self.screen)
 
@@ -183,17 +189,37 @@ class Hard_Pilgrimage():
                     return
         if self.mobs:
             for mob in self.mobs:
+                mob.move_mob(self.main_char.pos, self.screen.get_size(), self.blockers)
                 mob.draw(self.screen)
+            hitting_mob = self.main_char.checkcollisions(self.mobs)
+            if hitting_mob != -1:
+                self.main_char.hit_by_mob(self.mobs[hitting_mob])
         if self.stones:
             for stone in self.stones:
                 stone.draw(self.screen)
+            if self.main_char.stones < 999:
+                touching_stone = self.main_char.checkcollisions(self.stones)
+                if touching_stone != -1:
+                    self.main_char.stones += 1
+                    self.stones.remove(self.stones[touching_stone])
         if self.portals:
             for portal in self.portals:
                 portal.draw(self.screen)
 
+        mob_hit = self.main_char.update_stones(self.blockers, self.NPCs, self.mobs)
+        if mob_hit != -1:
+            remaining_health = self.mobs[mob_hit].life
+            if remaining_health < 1:
+                if self.mobs[mob_hit].event != None:
+                    self.mobs[mob_hit].event.trigger_event()
+                self.mobs.remove(self.mobs[mob_hit])
+
         portal_index = self.main_char.checkcollisions(self.portals)
         if portal_index != -1:
-            self.load_map(self.portals[portal_index]['next_map'])
+            black_screen = pygame.Surface(self.screen.get_size())
+            black_screen.fill((0, 0, 0))
+            self.screen.blit(black_screen, (0, 0))
+            self.load_map(self.portals[portal_index].next_map)
             return
 
     def dialog_state(self):
@@ -327,7 +353,10 @@ class Hard_Pilgrimage():
                     #Save game
                     t = time.localtime()
                     t_str = str(t.tm_year)+'/'+str(t.tm_mon)+'/'+str(t.tm_mday)+' '+str(t.tm_hour)+':'+str(t.tm_min)
-                    current_game = {'char_json': self.main_char.char_json, 'health': self.main_char.life, 'stones': self.main_char.stones, 'money': self.main_char.money, 'pos': self.main_char.pos, 'direction': self.main_char.direction, 'map': self.current_map, 'mobs': self.mobs}
+                    mobs = []
+                    for mob in self.mobs:
+                        mobs.append({"pos": mob.pos, "direction": mob.direction, "char_json": mob.char_json, "life": mob.life})
+                    current_game = {'char_json': self.main_char.char_json, 'health': self.main_char.life, 'stones': self.main_char.stones, 'money': self.main_char.money, 'pos': self.main_char.pos, 'direction': self.main_char.direction, 'map': self.current_map, 'mobs': mobs}
                     i = 0
                     for game in self.saved_games:
                         if self.arrow_pos[1] == 100 + i:
@@ -369,5 +398,12 @@ class Hard_Pilgrimage():
             self.stones.append(Object(tuple(stone['pos']), tuple(stone['size']), stone['image']))
         self.portals = []
         for portal in map_data['portals']:
-            self.portals.append(Portal(tuple(portal['pos']), tuple(portal['size']), portal['next_map']), portal['image'])
+            self.portals.append(Portal(tuple(portal['pos']), tuple(portal['size']), portal['next_map'], portal['image']))
         self.current_map = map_json
+        self.current_state = 'MAP_STATE'
+        if map_data['background_music'] != None:
+            pygame.mixer.music.load(map_data['background_music'])
+            pygame.mixer.music.play(-1, 0.0)
+        if map_data['event'] != None:
+            event = Game_Event(self, map_data['event'])
+            event.trigger_event()
