@@ -2,7 +2,7 @@
   "image": "images/test_background.png",
   "initial_pos": [300, 0],
   "initial_direction": "down",
-  "background_music": null,
+  "background_music": "sounds/luna_nueva.mp3",
   "event": {
     "type": "dialog",
     "interlocutor": null,

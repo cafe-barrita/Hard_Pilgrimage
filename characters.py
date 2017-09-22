@@ -171,7 +171,7 @@ class Main_Character(pygame.sprite.Sprite):
                  else:
                      aux = aux + '\n  ' + line
              dialog = aux
-         textbox = pygame.Surface((200, 100))
+         textbox = pygame.Surface((300, 100))
          textbox.fill((255, 255, 255))
          blit_text(textbox, dialog, (0, 0), font, (0, 0, 0))
 
@@ -195,7 +195,7 @@ class Main_Character(pygame.sprite.Sprite):
              if self.portrait != None:
                  pos_x = pos_x + 32
          else:
-             pos_x = self.pos[0] + self.sprite_size[0] - 200
+             pos_x = self.pos[0] + self.sprite_size[0] - 300
          return (pos_x, pos_y)
 
     def hit_by_mob(self, mob):
@@ -245,7 +245,7 @@ class NonPlayableCharacter(pygame.sprite.Sprite):
 
          if type(dialog) == list:
              dialog = dialog[answer]
-         textbox = pygame.Surface((200, 100))
+         textbox = pygame.Surface((300, 100))
          textbox.fill((255, 255, 255))
          blit_text(textbox, dialog, (0, 0), font, (0, 0, 0))
 
@@ -270,7 +270,7 @@ class NonPlayableCharacter(pygame.sprite.Sprite):
              if self.portrait != None:
                  pos_x = pos_x + 32
          else:
-             pos_x = self.pos[0] + self.size[0] - 200
+             pos_x = self.pos[0] + self.size[0] - 300
          return (pos_x, pos_y)
 
     def rotate(self, pos):

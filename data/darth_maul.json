@@ -4,10 +4,10 @@
   "sprite_width": 31,
   "sprite_height": 32,
   "dialog": [
-  "Esto es una prueba de NPC",
-  ["Y que hace?", "Y a mi que?"],
-  ["Cosas...", "Pero hace cosas..."],
-  null,
-  "Cosas de NPC"
+  "Oye Alfredo, tengo una duda.",
+  "Cual?",
+  "En que ayuda al Madrid que te des una caminata?",
+  ["Es mi granito de arena", "Mira macho, vete a la mierda"],
+  ["Si tu lo dices...", "Tampoco es para ponerse así..."]
   ]
 }

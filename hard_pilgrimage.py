@@ -22,7 +22,7 @@ class Hard_Pilgrimage():
         self.background.fill((0, 0, 0))
         self.title_font = pygame.font.SysFont('Arial', 60)
         self.subtitle_font = pygame.font.SysFont('Arial', 40)
-        self.text_font = pygame.font.SysFont('Arial', 24)
+        self.text_font = pygame.font.SysFont('Arial', 20)
         self.arrow_pos = (75, 300)
         self.interlocutor = None
         self.dialog_sequence = []
@@ -100,7 +100,7 @@ class Hard_Pilgrimage():
             else:
                 pass
 
-        vertices = [self.arrow_pos, (self.arrow_pos[0], self.arrow_pos[1]+24), (self.arrow_pos[0]+12, self.arrow_pos[1]+12)]
+        vertices = [self.arrow_pos, (self.arrow_pos[0], self.arrow_pos[1]+20), (self.arrow_pos[0]+10, self.arrow_pos[1]+10)]
         pygame.draw.polygon(self.screen, (255, 0, 0), vertices)
 
     def error(self):
@@ -253,23 +253,27 @@ class Hard_Pilgrimage():
             if type(self.dialog_sequence[self.dialog_index]) == list:
                 for key in self.KEYSEDGE:
                     if key == pygame.K_DOWN:
-                        if self.arrow_pos[1] < pos[1] + 24*len(self.dialog_sequence[self.dialog_index]):
-                            self.arrow_pos = (self.arrow_pos[0], self.arrow_pos[1] + 24)
+                        if self.arrow_pos[1] < pos[1] + 20*len(self.dialog_sequence[self.dialog_index]):
+                            self.arrow_pos = (self.arrow_pos[0], self.arrow_pos[1] + 20)
                     if key == pygame.K_UP:
                         if self.arrow_pos[1] > pos[1]:
-                            self.arrow_pos = (self.arrow_pos[0], self.arrow_pos[1] - 24)
+                            self.arrow_pos = (self.arrow_pos[0], self.arrow_pos[1] - 20)
                     elif key == pygame.K_SPACE or key == pygame.K_RETURN:
 
-                        self.answer = (self.arrow_pos[1] - pos[1])/24
+                        self.answer = (self.arrow_pos[1] - pos[1])/20
                         self.dialog_index = self.dialog_index + 1
                         return
 
-                vertices = [self.arrow_pos, (self.arrow_pos[0], self.arrow_pos[1]+24), (self.arrow_pos[0]+12, self.arrow_pos[1]+12)]
+                vertices = [self.arrow_pos, (self.arrow_pos[0], self.arrow_pos[1]+20), (self.arrow_pos[0]+10, self.arrow_pos[1]+10)]
                 pygame.draw.polygon(self.screen, (255, 0, 0), vertices)
         else:
             pos = self.interlocutor.dialog(self.screen, self.dialog_sequence[self.dialog_index], self.text_font, self.answer)
             if len(self.KEYSEDGE) > 0 and type(self.dialog_sequence[self.dialog_index]) == list:
                 self.dialog_index = self.dialog_index + 1
+                if len(self.dialog_sequence) < self.dialog_index + 1:
+                    self.dialog_index = 0
+                    self.current_state = 'MAP_STATE'
+                return
 
         if len(self.KEYSEDGE) > 0 and type(self.dialog_sequence[self.dialog_index]) != list:
             self.dialog_index = self.dialog_index + 1
