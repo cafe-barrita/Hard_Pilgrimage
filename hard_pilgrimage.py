@@ -108,8 +108,10 @@ class Hard_Pilgrimage():
         blit_text(self.screen, 'Ingame error', (150, 200), self.title_font, (255, 0, 0))  
 
     def new_game(self):
-        self.main_char = Main_Character('data/duro.json')
-        self.load_map('data/test_background.json')
+        self.control_state()
+        if len(self.KEYSEDGE):
+            self.main_char = Main_Character('data/duro.json')
+            self.load_map('data/test_background.json')
         #self.dialog_sequence = [None, "Soy Alfredo Duro y voy a ir andando a Cardiff", None, "Por el Madrid!!!!"]
         #self.current_state = 'DIALOG_STATE'
 
@@ -313,9 +315,10 @@ class Hard_Pilgrimage():
                     self.background.fill((0, 0, 0))
                     self.arrow_pos = (75, 300)
                     self.current_state = 'MAIN_TITLE'
+                    pygame.mixer.music.stop()
                 elif self.arrow_pos[1] == 190:
                     #Show  controls
-                    pass
+                    self.current_state = 'CONTROLS_STATE'
                 elif self.arrow_pos[1] == 235:
                     #Save game
                     self.current_state = 'SAVE_GAME'
@@ -392,7 +395,13 @@ class Hard_Pilgrimage():
 
     def control_state(self):
         '''Method correspondent with the controls menu. Meant to display keys used. Possibility to extend functionality by personalizing controls'''
-        pass
+        controls = 'cruceta\nespacio/enter\na\ns'
+        description = 'Desplazarse\nSeleccionar\nHablar\nLanzar piedras'
+        self.screen.blit(self.background, (0, 0))
+        blit_text(self.screen, controls, (20, 100), self.subtitle_font, (255, 0, 0))
+        blit_text(self.screen, description, (340, 100), self.subtitle_font, (255, 255, 255))
+        if len(self.KEYSEDGE):
+            self.current_state = 'MENU_STATE'
 
     def game_over(self):
         self.screen.blit(self.background, (0,0))
@@ -427,6 +436,8 @@ class Hard_Pilgrimage():
         if map_data['background_music'] != None:
             pygame.mixer.music.load(map_data['background_music'])
             pygame.mixer.music.play(-1, 0.0)
+        else:
+            pygame.mixer.music.stop()
         if map_data['event'] != None:
             event = Game_Event(self, map_data['event'])
             event.trigger_event()
