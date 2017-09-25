@@ -21,7 +21,7 @@
   {"pos": [0, 138], "size": [78, 53], "image": null}
   ],
   "NPCs": [
-  {"pos": [324, 302], "size": [31, 32], "direction": "down", "json": "data/darth_maul.json"}
+  {"pos": [324, 302], "size": [31, 32], "direction": "down", "json": "data/pedrerol_1.json"}
   ],
   "mobs": [
   ],
