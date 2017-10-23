@@ -44,6 +44,8 @@ class Game_Event():
         elif self.type == 'reward':
             self.reward_type = event_dict['reward_type']
             self.reward_quantity = event_dict['reward']
+            if self.reward_type == 'item':
+                self.item_json = event_dict['item_json']
         elif self.type == 'update_protagonist':
             self.char_json = event_dict['char_json']
         elif self.type == 'restore_health':
@@ -77,6 +79,10 @@ class Game_Event():
         elif self.reward_type == 'stones':
             units = ' piedras'
             self.game.main_char.stones += self.reward_quantity
+        elif self.reward_type == 'item':
+            item_info = json.load(open(item_json))
+            units = ' x '+ item_info['name']
+            self.game.main_char.add_item(self.item_json, self.quantity)
 
         self.game.current_state = 'DIALOG_STATE'
         self.game.dialog_sequence = [None, "He conseguido "+str(self.reward_quantity)+units]
@@ -95,3 +101,13 @@ class Game_Event():
         self.game.background = pygame.Surface(self.game.screen.get_size())
         self.game.background.fill((0, 0, 0))
         self.game.current_state = 'CREDITS_STATE'
+
+class ITEM():
+     def __init__(self, item_json):
+         self.item_json = item_json
+         item_info = json.load(open(item_json))
+         self.name = item_info['name']
+         self.effect = item_info['effect']
+
+     def trigger_effect(self):
+         pass

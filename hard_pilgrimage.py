@@ -3,6 +3,7 @@ from pygame.locals import *
 from tools import *
 from characters import *
 from objects import *
+from constants import *
 
 class Hard_Pilgrimage():
     '''Main class of the game, It will contain the state machine and all its methods'''
@@ -19,11 +20,11 @@ class Hard_Pilgrimage():
         self.saved_games = []
         self.current_map = None
         self.background = pygame.Surface(screen.get_size())
-        self.background.fill((0, 0, 0))
-        self.title_font = pygame.font.SysFont('Arial', 60)
-        self.subtitle_font = pygame.font.SysFont('Arial', 40)
-        self.text_font = pygame.font.SysFont('Arial', 20)
-        self.arrow_pos = (75, 300)
+        self.background.fill(BLACK)
+        self.title_font = pygame.font.SysFont('Arial', TITLE_SIZE)
+        self.subtitle_font = pygame.font.SysFont('Arial', SUBTITLE_SIZE)
+        self.text_font = pygame.font.SysFont('Arial', TEXT_SIZE)
+        self.arrow_pos = (TITLE_POS_X - TEXT_SIZE, 300)
         self.interlocutor = None
         self.dialog_sequence = []
         self.dialog_index = 0
@@ -61,37 +62,39 @@ class Hard_Pilgrimage():
         elif self.current_state == 'SAVE_GAME':
             self.save_game()
         elif self.current_state == 'CONTROLS_STATE':
-            self.control_state()       
+            self.control_state()   
+        elif self.current_state == 'INVENTARY_STATE':
+            self.display_inventary()  
         elif self.current_state == 'GAME_OVER':
             self.game_over() 
         else:
             self.background = pygame.Surface(self.screen.get_size())
-            self.background.fill((0, 0, 0))
+            self.background.fill(BLACK)
             self.error()
 
         del self.KEYSEDGE[:]
 
     def main_title(self):
         self.screen.blit(self.background, (0,0))
-        blit_text(self.screen, 'Hard Pilgrimage', (100, 150), self.title_font, (255, 255, 255))
-        blit_text(self.screen, 'Road to Cardiff', (175, 215), self.subtitle_font, (255, 255, 255))
-        blit_text(self.screen, 'Nueva partida', (100, 300), self.text_font, (255, 255, 255))
-        blit_text(self.screen, 'Cargar partida', (375, 300), self.text_font, (255, 255, 255))
+        blit_text(self.screen, 'Hard Pilgrimage', (TITLE_POS_X, 150), self.title_font, WHITE)
+        blit_text(self.screen, 'Road to Cardiff', (175, 215), self.subtitle_font, WHITE)
+        blit_text(self.screen, 'Nueva partida', (TITLE_POS_X, 300), self.text_font, WHITE)
+        blit_text(self.screen, 'Cargar partida', (375, 300), self.text_font, WHITE)
 
         for key in self.KEYSEDGE:
             if key == pygame.K_LEFT:
                 if self.arrow_pos[0] == 350:
-                    self.arrow_pos = (75, 300)
+                    self.arrow_pos = (TITLE_POS_X - TEXT_SIZE, 300)
             elif key == pygame.K_RIGHT:
-                if self.arrow_pos[0] == 75:
+                if self.arrow_pos[0] == TITLE_POS_X - TEXT_SIZE:
                     self.arrow_pos = (350, 300)
             elif key == pygame.K_SPACE or key == pygame.K_RETURN:
-                if self.arrow_pos[0] == 75:
+                if self.arrow_pos[0] == TITLE_POS_X - TEXT_SIZE:
                     #Start new game
                     self.current_state = 'NEW_GAME'
                     return
                 if self.arrow_pos[0] == 350:
-                    f = open('data/saved_games.json')
+                    f = open(SAVED_GAMES_FILE)
                     self.saved_games = json.load(f)
                     f.close()
                     self.arrow_pos = (160, 100)
@@ -100,37 +103,35 @@ class Hard_Pilgrimage():
             else:
                 pass
 
-        vertices = [self.arrow_pos, (self.arrow_pos[0], self.arrow_pos[1]+20), (self.arrow_pos[0]+10, self.arrow_pos[1]+10)]
-        pygame.draw.polygon(self.screen, (255, 0, 0), vertices)
+        vertices = [self.arrow_pos, (self.arrow_pos[0], self.arrow_pos[1]+TEXT_SIZE), (self.arrow_pos[0]+TEXT_SIZE/2, self.arrow_pos[1]+TEXT_SIZE/2)]
+        pygame.draw.polygon(self.screen, RED, vertices)
 
     def error(self):
         self.screen.blit(self.background, (0,0))
-        blit_text(self.screen, 'Ingame error', (150, 200), self.title_font, (255, 0, 0))  
+        blit_text(self.screen, 'Ingame error', (150, 200), self.title_font, RED)  
 
     def new_game(self):
         self.control_state()
         if len(self.KEYSEDGE):
-            self.main_char = Main_Character('data/duro.json')
-            self.load_map('data/test_background.json')
-        #self.dialog_sequence = [None, "Soy Alfredo Duro y voy a ir andando a Cardiff", None, "Por el Madrid!!!!"]
-        #self.current_state = 'DIALOG_STATE'
+            self.main_char = Main_Character(MAIN_CHAR)
+            self.load_map(INITIAL_MAP)
 
     def load_game(self):
         
         self.screen.blit(self.background, (0,0))
         i = 0
         for game in self.saved_games:
-            blit_text(self.screen, game, (200, 100+i), self.subtitle_font, (255, 255, 255))
+            blit_text(self.screen, game, (200, 100+i), self.subtitle_font, WHITE)
             i = i + 40
-        blit_text(self.screen, 'Volver', (200, 100+i), self.subtitle_font, (255, 255, 255))
+        blit_text(self.screen, 'Volver', (200, 100+i), self.subtitle_font, WHITE)
 
         for key in self.KEYSEDGE:
             if key == pygame.K_DOWN:
                 if self.arrow_pos[1] < 100 + i:
-                    self.arrow_pos = (160, self.arrow_pos[1]+40)
+                    self.arrow_pos = (160, self.arrow_pos[1]+SUBTITLE_SIZE)
             elif key == pygame.K_UP:
                 if self.arrow_pos[1] > 100:
-                    self.arrow_pos = (160, self.arrow_pos[1]-40)
+                    self.arrow_pos = (160, self.arrow_pos[1]-SUBTITLE_SIZE)
             elif key == pygame.K_SPACE or key == pygame.K_RETURN:
                 i = 0
                 for game in self.saved_games:
@@ -149,10 +150,12 @@ class Hard_Pilgrimage():
                             mob = Mob(mob_dict['pos'], mob_dict['direction'], mob_dict['char_json'])
                             mob.life = mob_dict['life']
                             self.mobs.append(mob)
+                        for item in saved_data['inventary']:
+                            self.main_char.inventary.append((Item(item[0]), item[1]))
                         self.current_state = 'MAP_STATE'
                         return
                     i = i +40
-                self.arrow_pos = (75, 300)
+                self.arrow_pos = (TITLE_POS_X - TEXT_SIZE, 300)
                 self.current_state = 'MAIN_TITLE'
             else:
                 pass
@@ -164,7 +167,7 @@ class Hard_Pilgrimage():
 
         if pygame.K_RETURN in self.KEYSEDGE:
             self.background = pygame.Surface(self.screen.get_size())
-            self.background.fill((0, 0, 0))
+            self.background.fill(BLACK)
             self.arrow_pos = (160, 100)
             self.current_state = 'MENU_STATE'
             return
@@ -200,9 +203,9 @@ class Hard_Pilgrimage():
                 self.main_char.hit_by_mob(self.mobs[hitting_mob])
                 if self.main_char.life < 1:
                     self.current_state = 'GAME_OVER'
-                    self.arrow_pos = (75, 300)
+                    self.arrow_pos = (TITLE_POS_X - TEXT_SIZE, 300)
                     self.background = pygame.Surface(self.screen.get_size())
-                    self.background.fill((0, 0, 0))
+                    self.background.fill(BLACK)
                     return
         if self.stones:
             for stone in self.stones:
@@ -227,7 +230,7 @@ class Hard_Pilgrimage():
         portal_index = self.main_char.checkcollisions(self.portals)
         if portal_index != -1:
             black_screen = pygame.Surface(self.screen.get_size())
-            black_screen.fill((0, 0, 0))
+            black_screen.fill(BLACK)
             self.screen.blit(black_screen, (0, 0))
             self.load_map(self.portals[portal_index].next_map)
             return
@@ -255,19 +258,19 @@ class Hard_Pilgrimage():
             if type(self.dialog_sequence[self.dialog_index]) == list:
                 for key in self.KEYSEDGE:
                     if key == pygame.K_DOWN:
-                        if self.arrow_pos[1] < pos[1] + 20*len(self.dialog_sequence[self.dialog_index]):
-                            self.arrow_pos = (self.arrow_pos[0], self.arrow_pos[1] + 20)
+                        if self.arrow_pos[1] < pos[1] + TEXT_SIZE*len(self.dialog_sequence[self.dialog_index]):
+                            self.arrow_pos = (self.arrow_pos[0], self.arrow_pos[1] + TEXT_SIZE)
                     if key == pygame.K_UP:
                         if self.arrow_pos[1] > pos[1]:
-                            self.arrow_pos = (self.arrow_pos[0], self.arrow_pos[1] - 20)
+                            self.arrow_pos = (self.arrow_pos[0], self.arrow_pos[1] - TEXT_SIZE)
                     elif key == pygame.K_SPACE or key == pygame.K_RETURN:
 
-                        self.answer = (self.arrow_pos[1] - pos[1])/20
+                        self.answer = (self.arrow_pos[1] - pos[1])/TEXT_SIZE
                         self.dialog_index = self.dialog_index + 1
                         return
 
-                vertices = [self.arrow_pos, (self.arrow_pos[0], self.arrow_pos[1]+20), (self.arrow_pos[0]+10, self.arrow_pos[1]+10)]
-                pygame.draw.polygon(self.screen, (255, 0, 0), vertices)
+                vertices = [self.arrow_pos, (self.arrow_pos[0], self.arrow_pos[1]+TEXT_SIZE), (self.arrow_pos[0]+TEXT_SIZE/2, self.arrow_pos[1]+TEXT_SIZE/2)]
+                pygame.draw.polygon(self.screen, RED, vertices)
         else:
             pos = self.interlocutor.dialog(self.screen, self.dialog_sequence[self.dialog_index], self.text_font, self.answer)
             if len(self.KEYSEDGE) > 0 and type(self.dialog_sequence[self.dialog_index]) == list:
@@ -290,18 +293,18 @@ class Hard_Pilgrimage():
             self.current_state = 'MAP_STATE'
 
     def menu_state(self):
-        #TODO change state according to option selected.
+
         self.screen.blit(self.background, (0, 0))
-        menu_options = "Volver al juego \nPantalla principal \nListar controles \nGuardar Partida \nSalir del juego"
-        blit_text(self.screen, menu_options, (200, 100), self.subtitle_font, (255, 255, 255))
+        menu_options = MENU_OPTIONS
+        blit_text(self.screen, menu_options, (200, 100), self.subtitle_font, WHITE)
 
         for key in self.KEYSEDGE:
             if key == pygame.K_DOWN:
-                if self.arrow_pos[1] < 280:
-                    self.arrow_pos = (160, self.arrow_pos[1]+45)
+                if self.arrow_pos[1] < 325:
+                    self.arrow_pos = (160, self.arrow_pos[1]+(SUBTITLE_SIZE+5))
             elif key == pygame.K_UP:
                 if self.arrow_pos[1] > 100:
-                    self.arrow_pos = (160, self.arrow_pos[1]-45)
+                    self.arrow_pos = (160, self.arrow_pos[1]-(SUBTITLE_SIZE+5))
             elif key == pygame.K_SPACE or key == pygame.K_RETURN:
                 if self.arrow_pos[1] == 100:
                     #Return to map state
@@ -309,61 +312,68 @@ class Hard_Pilgrimage():
                     map_data = json.load(open(self.current_map))
                     self.background = pygame.image.load(map_data['image'])
                     self.background = pygame.transform.scale(self.background, self.screen.get_size())
-                if self.arrow_pos[1] == 145:
+                elif self.arrow_pos[1] == 145:
+                    #Display inventary
+                    self.current_state = 'INVENTARY_STATE'
+                    self.arrow_pos = (160, 100)
+                elif self.arrow_pos[1] == 190:
                     #Return to main title
                     self.background = pygame.Surface(self.screen.get_size())
-                    self.background.fill((0, 0, 0))
-                    self.arrow_pos = (75, 300)
+                    self.background.fill(BLACK)
+                    self.arrow_pos = (TITLE_POS_X - TEXT_SIZE, 300)
                     self.current_state = 'MAIN_TITLE'
                     pygame.mixer.music.stop()
-                elif self.arrow_pos[1] == 190:
+                elif self.arrow_pos[1] == 235:
                     #Show  controls
                     self.current_state = 'CONTROLS_STATE'
-                elif self.arrow_pos[1] == 235:
+                elif self.arrow_pos[1] == 280:
                     #Save game
                     self.current_state = 'SAVE_GAME'
-                    f = open('data/saved_games.json')
+                    f = open(SAVED_GAMES_FILE)
                     self.saved_games = json.load(f)
                     f.close()
                     self.arrow_pos = (160, 100)
-                elif self.arrow_pos[1] == 280:
+                elif self.arrow_pos[1] == 325:
                     #Exit game
                     pygame.quit()
                     sys.exit(0)
             else:
                 pass
 
-        vertices = [self.arrow_pos, (self.arrow_pos[0], self.arrow_pos[1]+40), (self.arrow_pos[0]+20, self.arrow_pos[1]+20)]
-        pygame.draw.polygon(self.screen, (255, 0, 0), vertices)
+        vertices = [self.arrow_pos, (self.arrow_pos[0], self.arrow_pos[1]+SUBTITLE_SIZE), (self.arrow_pos[0]+SUBTITLE_SIZE/2, self.arrow_pos[1]+SUBTITLE_SIZE/2)]
+        pygame.draw.polygon(self.screen, RED, vertices)
 
     def roll_credits(self):
         '''Display credits and return to main title'''
-        credits = 'Programming by Juan Manuel Sanchez\nImages by Juan Manuel Sanchez and stolen from the internet\nMusic stolen from the internet\nTrip to Cardiff by Alfredo Duro\nLA DUODECIMA by Real Madrid'
+        credits = CREDITS_LIST
         self.screen.blit(self.background, (0, 0))
-        blit_text(self.screen, credits, (10, 10), self.subtitle_font, (255, 255, 255))
+        blit_text(self.screen, credits[self.dialog_index], (10, 10), self.subtitle_font, WHITE)
         if len(self.KEYSEDGE):
-            self.current_state = 'MAIN_TITLE'
-            self.arrow_pos = (75, 300)
+            self.dialog_index += 1
+            if len(credits) < self.dialog_index +1:
+                self.dialog_index = 0
+                self.current_state = 'MAIN_TITLE'
+                self.arrow_pos = (TITLE_POS_X - TEXT_SIZE, 300)
 
     def save_game(self):
 
         self.screen.blit(self.background, (0,0))
         i = 0
         for game in self.saved_games:
-            blit_text(self.screen, game, (200, 100+i), self.subtitle_font, (255, 255, 255))
+            blit_text(self.screen, game, (200, 100+i), self.subtitle_font, WHITE)
             i = i + 40
         if len(self.saved_games) < 5:
-            blit_text(self.screen, 'Nuevo', (200, 100+i), self.subtitle_font, (255, 255, 255))
+            blit_text(self.screen, 'Nuevo', (200, 100+i), self.subtitle_font, WHITE)
             i = i + 40
-        blit_text(self.screen, 'Volver', (200, 100+i), self.subtitle_font, (255, 255, 255))
+        blit_text(self.screen, 'Volver', (200, 100+i), self.subtitle_font, WHITE)
 
         for key in self.KEYSEDGE:
             if key == pygame.K_DOWN:
                 if self.arrow_pos[1] < 100 + i:
-                    self.arrow_pos = (160, self.arrow_pos[1]+40)
+                    self.arrow_pos = (160, self.arrow_pos[1]+SUBTITLE_SIZE)
             elif key == pygame.K_UP:
                 if self.arrow_pos[1] > 100:
-                    self.arrow_pos = (160, self.arrow_pos[1]-40)
+                    self.arrow_pos = (160, self.arrow_pos[1]-SUBTITLE_SIZE)
             elif key == pygame.K_SPACE or key == pygame.K_RETURN:
                 if self.arrow_pos[1] == 100 + i:
                     #Return to menu state
@@ -376,7 +386,10 @@ class Hard_Pilgrimage():
                     mobs = []
                     for mob in self.mobs:
                         mobs.append({"pos": mob.pos, "direction": mob.direction, "char_json": mob.char_json, "life": mob.life})
-                    current_game = {'char_json': self.main_char.char_json, 'health': self.main_char.life, 'stones': self.main_char.stones, 'money': self.main_char.money, 'pos': self.main_char.pos, 'direction': self.main_char.direction, 'map': self.current_map, 'mobs': mobs}
+                    items = []
+                    for item in self.main_char.inventary:
+                         items.append([item[0].item_json, item[1]])
+                    current_game = {'char_json': self.main_char.char_json, 'health': self.main_char.life, 'inventary': items, 'stones': self.main_char.stones, 'money': self.main_char.money, 'pos': self.main_char.pos, 'direction': self.main_char.direction, 'map': self.current_map, 'mobs': mobs}
                     i = 0
                     for game in self.saved_games:
                         if self.arrow_pos[1] == 100 + i:
@@ -384,28 +397,64 @@ class Hard_Pilgrimage():
                             break
                         i = i + 40
                     self.saved_games[t_str] = current_game
-                    f = open('data/saved_games.json', 'w')
+                    f = open(SAVED_GAMES_FILE, 'w')
                     json.dump(self.saved_games, f)
                     f.close()
             else:
                 pass
 
-        vertices = [self.arrow_pos, (self.arrow_pos[0], self.arrow_pos[1]+40), (self.arrow_pos[0]+20, self.arrow_pos[1]+20)]
-        pygame.draw.polygon(self.screen, (255, 0, 0), vertices)
+        vertices = [self.arrow_pos, (self.arrow_pos[0], self.arrow_pos[1]+SUBTITLE_SIZE), (self.arrow_pos[0]+SUBTITLE_SIZE/2, self.arrow_pos[1]+SUBTITLE_SIZE/2)]
+        pygame.draw.polygon(self.screen, RED, vertices)
+
+    def display_inventary(self):
+        self.screen.blit(self.background, (0,0))
+        i = 0
+        for item in self.main_char.inventary:
+            blit_text(self.screen, item[0].name, (200, 100+i), self.subtitle_font, WHITE)
+            i = i + 40
+        for item in self.main_char.inventary:
+            blit_text(self.screen, item[1], (400, 100+i), self.subtitle_font, RED)
+            i = i + 40
+        blit_text(self.screen, 'Volver', (200, 100+i), self.subtitle_font, WHITE)
+
+        if self.arrow_pos[1] < 100 + i:
+            selected_item = self.main_char.inventary[(self.arrow_pos[1] - 100)/40][0]
+            self.display_info(selected_item.effect)
+
+        for key in self.KEYSEDGE:
+            if key == pygame.K_DOWN:
+                if self.arrow_pos[1] < 100 + i:
+                    self.arrow_pos = (160, self.arrow_pos[1]+SUBTITLE_SIZE)
+            elif key == pygame.K_UP:
+                if self.arrow_pos[1] > 100:
+                    self.arrow_pos = (160, self.arrow_pos[1]-SUBTITLE_SIZE)
+            elif key == pygame.K_SPACE or key == pygame.K_RETURN:
+                if self.arrow_pos[1] == 100 + i:
+                    #Return to menu state
+                    self.current_state = 'MENU_STATE'
+                    self.arrow_pos = (160, 100)
+                else:
+                    selected_item = self.main_char.inventary[(self.arrow_pos[1] - 100)/40][0].name
+                    self.main_char.use_item(selected_item)
+            else:
+                pass
+
+        vertices = [self.arrow_pos, (self.arrow_pos[0], self.arrow_pos[1]+SUBTITLE_SIZE), (self.arrow_pos[0]+SUBTITLE_SIZE/2, self.arrow_pos[1]+SUBTITLE_SIZE/2)]
+        pygame.draw.polygon(self.screen, RED, vertices)
 
     def control_state(self):
         '''Method correspondent with the controls menu. Meant to display keys used. Possibility to extend functionality by personalizing controls'''
-        controls = 'cruceta\nespacio/enter\na\ns'
-        description = 'Desplazarse\nSeleccionar\nHablar\nLanzar piedras'
+        controls = CONTROL_LIST_STRING
+        description = CONTROL_DESC
         self.screen.blit(self.background, (0, 0))
-        blit_text(self.screen, controls, (20, 100), self.subtitle_font, (255, 0, 0))
-        blit_text(self.screen, description, (340, 100), self.subtitle_font, (255, 255, 255))
+        blit_text(self.screen, controls, (20, 100), self.subtitle_font, RED)
+        blit_text(self.screen, description, (340, 100), self.subtitle_font, WHITE)
         if len(self.KEYSEDGE):
             self.current_state = 'MENU_STATE'
 
     def game_over(self):
         self.screen.blit(self.background, (0,0))
-        blit_text(self.screen, 'Game Over', (150, 200), self.title_font, (255, 0, 0)) 
+        blit_text(self.screen, 'Game Over', (150, 200), self.title_font, RED) 
         if len(self.KEYSEDGE):
             self.current_state = 'MAIN_TITLE' 
 
@@ -441,3 +490,9 @@ class Hard_Pilgrimage():
         if map_data['event'] != None:
             event = Game_Event(self, map_data['event'])
             event.trigger_event()
+
+    def display_info(self, info):
+        text_box = pygame.Surface((640, 120))
+        text_box.fill(WHITE)
+        blit_text(text_box, info, (0, 0), self.text_font, BLACK)
+        self.screen.blit(text_box, (0,480-120))

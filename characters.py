@@ -2,6 +2,7 @@ import pygame, math, json
 from tools import blit_text
 from random import randrange
 from objects import *
+from constants import *
 from pygame.locals import *
 
 class Main_Character(pygame.sprite.Sprite):
@@ -29,6 +30,7 @@ class Main_Character(pygame.sprite.Sprite):
         self.money = 0
         self.char_json = char_json
         self.thrown_stones = []
+        self.inventary = {}
          
     def update(self):
         self.rect.topleft = self.pos
@@ -115,8 +117,8 @@ class Main_Character(pygame.sprite.Sprite):
         screen.blit(self.image, self.rect, self.get_sprite())
         screen.blit(self.portrait, (0, 0, 32, 32))
         #Draw life bar
-        pygame.draw.rect(screen, (255, 0, 0), (34, 2, 100, 4))
-        pygame.draw.rect(screen, (0, 255, 0), (34, 2, self.life, 4))
+        pygame.draw.rect(screen, RED, (34, 2, 100, 4))
+        pygame.draw.rect(screen, GREEN, (34, 2, self.life, 4))
 
         font = pygame.font.SysFont('Arial', 10)
         resources = str(self.stones) + " piedras\n" + str(self.money) + " euros"
@@ -172,13 +174,13 @@ class Main_Character(pygame.sprite.Sprite):
                      aux = aux + '\n  ' + line
              dialog = aux
          textbox = pygame.Surface((300, 100))
-         textbox.fill((255, 255, 255))
-         blit_text(textbox, dialog, (0, 0), font, (0, 0, 0))
+         textbox.fill(WHITE)
+         blit_text(textbox, dialog, (0, 0), font, BLACK)
 
          pos = self.dialog_pos(screen)
 
          if self.portrait != None:
-             pygame.draw.rect(screen, (255, 255, 255), (pos[0] -32, pos[1], 32, 32))
+             pygame.draw.rect(screen, WHITE, (pos[0] -32, pos[1], 32, 32))
              screen.blit(self.portrait, (pos[0] -32, pos[1], 32, 32))
          screen.blit(textbox, pos)
 
@@ -206,6 +208,30 @@ class Main_Character(pygame.sprite.Sprite):
         self.pos[0] = self.pos[0] + int((dif_x * 6)/abs(dif_x))
         self.pos[1] = self.pos[1] + int((dif_y * 6)/abs(dif_y))
         self.update()
+
+    def use_item(self, item_name):
+        for i in range(self.inventary):
+            if self.inventary[i][0] == item_name:
+                self.inventary[i] = (self.inventary[i][0],self.inventary[i][1] - 1)
+                if self.inventary[i][1] < 1:
+                    del self.inventary[i]
+                break
+
+    def add_item(self, item_json, quantity):
+        item_info = json.load(open(item_json))
+        if self.has_item(item_info['name']):
+            for i in range(self.inventary):
+                if self.inventary[i][0] == item_name:
+                    self.inventary[i] = (self.inventary[i][0],self.inventary[i][1] + quantity)
+                    break
+        else:
+            self.inventary.append((Item(item_json), quantity))
+
+    def has_item(self, item_name):
+        for item in self.inventary:
+            if item_name == item[0].name:
+                return True
+        return False
 
 class NonPlayableCharacter(pygame.sprite.Sprite):
 
@@ -246,13 +272,13 @@ class NonPlayableCharacter(pygame.sprite.Sprite):
          if type(dialog) == list:
              dialog = dialog[answer]
          textbox = pygame.Surface((300, 100))
-         textbox.fill((255, 255, 255))
+         textbox.fill(WHITE)
          blit_text(textbox, dialog, (0, 0), font, (0, 0, 0))
 
          pos = self.dialog_pos(screen)
 
          if self.portrait != None:
-             pygame.draw.rect(screen, (255, 255, 255), (pos[0] -32, pos[1], 32, 32))
+             pygame.draw.rect(screen, WHITE, (pos[0] -32, pos[1], 32, 32))
              screen.blit(self.portrait, (pos[0] -32, pos[1], 32, 32))
          screen.blit(textbox, pos)
 
@@ -389,8 +415,8 @@ class Mob(pygame.sprite.Sprite):
 
     def draw(self, screen):
         screen.blit(self.image, self.rect, self.get_sprite())
-        pygame.draw.rect(screen, (255, 0, 0), (self.pos[0], self.pos[1] - 6, self.health, 4))
-        pygame.draw.rect(screen, (0, 255, 0), (self.pos[0], self.pos[1] - 6, self.life, 4))
+        pygame.draw.rect(screen, RED, (self.pos[0], self.pos[1] - 6, self.health, 4))
+        pygame.draw.rect(screen, GREEN, (self.pos[0], self.pos[1] - 6, self.life, 4))
 
     def get_sprite(self):
         if self.direction == 'down':
