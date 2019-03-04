@@ -29,6 +29,7 @@ class Hard_Pilgrimage():
         self.dialog_sequence = []
         self.dialog_index = 0
         self.answer = 0
+        self.clock = pygame.time.Clock()
 
     def main_loop(self):
         '''Main loop method. It will call the method associated with the correspondent state'''
@@ -73,6 +74,8 @@ class Hard_Pilgrimage():
             self.error()
 
         del self.KEYSEDGE[:]
+
+        self.clock.tick(30)
 
     def main_title(self):
         self.screen.blit(self.background, (0,0))

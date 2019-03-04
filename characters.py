@@ -205,8 +205,10 @@ class Main_Character(pygame.sprite.Sprite):
         dif_x = self.pos[0] - mob.pos[0]
         dif_y = self.pos[1] - mob.pos[1]
         #self.pos = (self.pos[0] - dif_x * mob.damage, self.pos[1] - dif_y * mob.damage)
-        self.pos[0] = self.pos[0] + int((dif_x * 6)/abs(dif_x))
-        self.pos[1] = self.pos[1] + int((dif_y * 6)/abs(dif_y))
+        if dif_x != 0:
+            self.pos[0] = self.pos[0] + int((dif_x * 6)/abs(dif_x))
+        if dif_y != 0:
+            self.pos[1] = self.pos[1] + int((dif_y * 6)/abs(dif_y))
         self.update()
 
     def use_item(self, item_name):
