@@ -1,1 +1,0 @@
-{"2017/9/26 16:59": {"stones": 4, "map": "data/mob_test.json", "direction": "right", "mobs": [{"direction": "left", "char_json": "data/bird_mob.json", "pos": [300, 89], "life": 10}], "char_json": "data/duro.json", "money": 0, "health": 100, "inventary": [], "pos": [320, 289]}}

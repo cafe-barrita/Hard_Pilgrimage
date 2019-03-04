@@ -1,2 +1,4 @@
-*.pyc
+.idea
+__pycache__
+data/saved_games.json
 

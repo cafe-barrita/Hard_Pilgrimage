@@ -265,7 +265,7 @@ class Hard_Pilgrimage():
                             self.arrow_pos = (self.arrow_pos[0], self.arrow_pos[1] - TEXT_SIZE)
                     elif key == pygame.K_SPACE or key == pygame.K_RETURN:
 
-                        self.answer = (self.arrow_pos[1] - pos[1])/TEXT_SIZE
+                        self.answer = int((self.arrow_pos[1] - pos[1])/TEXT_SIZE)
                         self.dialog_index = self.dialog_index + 1
                         return
 
