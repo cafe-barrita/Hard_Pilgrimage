@@ -1,0 +1,173 @@
+[gd_scene load_steps=18 format=2]
+
+[ext_resource path="res://images/duro_sprite.png" type="Texture" id=1]
+[ext_resource path="res://scripts/character.gd" type="Script" id=2]
+[ext_resource path="res://images/stone_resource.png" type="Texture" id=3]
+[ext_resource path="res://scripts/UIdisplay.gd" type="Script" id=4]
+[ext_resource path="res://images/bird_sprite.png" type="Texture" id=5]
+[ext_resource path="res://scripts/bird.gd" type="Script" id=6]
+
+[sub_resource type="BoxShape" id=1]
+extents = Vector3( 30, 1, 30 )
+
+[sub_resource type="CubeMesh" id=2]
+size = Vector3( 30, 1, 30 )
+
+[sub_resource type="SpatialMaterial" id=3]
+albedo_color = Color( 0.172549, 0.164706, 0.243137, 1 )
+
+[sub_resource type="Animation" id=5]
+resource_name = "Walk"
+length = 0.3
+tracks/0/type = "value"
+tracks/0/path = NodePath("Sprite3D:frame")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/keys = {
+"times": PoolRealArray( 0, 0.1, 0.2 ),
+"transitions": PoolRealArray( 1, 1, 1 ),
+"update": 1,
+"values": [ 1, 2, 0 ]
+}
+
+[sub_resource type="StyleBoxFlat" id=6]
+bg_color = Color( 0, 0.6, 0, 1 )
+
+[sub_resource type="StyleBoxFlat" id=7]
+bg_color = Color( 0, 0, 0, 1 )
+
+[sub_resource type="BoxShape" id=4]
+extents = Vector3( 0.5, 0.5, 0.1 )
+
+[sub_resource type="Animation" id=11]
+resource_name = "Walk"
+length = 0.3
+
+[sub_resource type="BoxShape" id=8]
+
+[sub_resource type="CubeMesh" id=9]
+
+[sub_resource type="BoxShape" id=10]
+
+[node name="Main" type="Spatial"]
+
+[node name="Floor" type="StaticBody" parent="."]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -1, 0 )
+
+[node name="CollisionShape" type="CollisionShape" parent="Floor"]
+shape = SubResource( 1 )
+
+[node name="MeshInstance" type="MeshInstance" parent="Floor"]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0.471361, -0.360857, 0.0386054 )
+mesh = SubResource( 2 )
+material/0 = SubResource( 3 )
+
+[node name="DirectionalLight" type="DirectionalLight" parent="."]
+transform = Transform( 0.960577, -0.275237, 0.0391971, 0.0144836, 0.190341, 0.981611, -0.277636, -0.942346, 0.186824, 0.76788, 11.4614, 1.60966 )
+
+[node name="CharacterBody" type="KinematicBody" parent="."]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.5, 0 )
+script = ExtResource( 2 )
+
+[node name="Sprite3D" type="Sprite3D" parent="CharacterBody"]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.7, 0 )
+pixel_size = 0.05
+texture = ExtResource( 1 )
+vframes = 4
+hframes = 9
+frame = 1
+region_rect = Rect2( 29.0026, -4.06062, 30.4354, 37.1415 )
+
+[node name="AnimationPlayer" type="AnimationPlayer" parent="CharacterBody"]
+anims/Walk = SubResource( 5 )
+
+[node name="PoV" type="Spatial" parent="CharacterBody"]
+transform = Transform( 1, 0, 0, 0, 0.866025, 0.5, 0, -0.5, 0.866025, 0, 1, 2.2 )
+
+[node name="Camera" type="Camera" parent="CharacterBody/PoV"]
+transform = Transform( 1, 0, 0, 0, 1, 2.98023e-08, 0, -2.98023e-08, 1, 0, 0, 0 )
+
+[node name="ViewportContainer" type="ViewportContainer" parent="CharacterBody/PoV"]
+margin_right = 40.0
+margin_bottom = 40.0
+script = ExtResource( 4 )
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="Lifebar" type="VBoxContainer" parent="CharacterBody/PoV/ViewportContainer"]
+margin_right = 1024.0
+margin_bottom = 600.0
+
+[node name="Healthbar" type="ProgressBar" parent="CharacterBody/PoV/ViewportContainer/Lifebar"]
+margin_right = 1024.0
+margin_bottom = 10.0
+rect_min_size = Vector2( 0, 10 )
+custom_styles/fg = SubResource( 6 )
+custom_styles/bg = SubResource( 7 )
+custom_colors/font_color = Color( 0, 0, 0, 1 )
+custom_colors/font_color_shadow = Color( 0, 0, 0, 1 )
+step = 1.0
+value = 100.0
+percent_visible = false
+
+[node name="Stones" type="VBoxContainer" parent="CharacterBody/PoV/ViewportContainer"]
+margin_right = 1024.0
+margin_bottom = 600.0
+rect_pivot_offset = Vector2( 10, 40 )
+
+[node name="Sprite" type="Sprite" parent="CharacterBody/PoV/ViewportContainer/Stones"]
+position = Vector2( 0, 5 )
+texture = ExtResource( 3 )
+
+[node name="Label" type="Label" parent="CharacterBody/PoV/ViewportContainer/Stones"]
+margin_right = 1024.0
+margin_bottom = 14.0
+custom_colors/font_color = Color( 0, 0, 0, 1 )
+text = "0"
+
+[node name="CollisionShape" type="CollisionShape" parent="CharacterBody"]
+shape = SubResource( 4 )
+
+[node name="Enemy_bird" type="KinematicBody" parent="."]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 2, 0, -2 )
+script = ExtResource( 6 )
+
+[node name="Sprite3D" type="Sprite3D" parent="Enemy_bird"]
+transform = Transform( 0.8, 0, 0, 0, 0.8, 0, 0, 0, 1, 0, 0.2, 0 )
+pixel_size = 0.05
+texture = ExtResource( 5 )
+vframes = 4
+hframes = 3
+frame = 9
+region_rect = Rect2( 29.0026, -4.06062, 30.4354, 37.1415 )
+
+[node name="AnimationPlayer" type="AnimationPlayer" parent="Enemy_bird"]
+anims/Walk = SubResource( 11 )
+
+[node name="CollisionShape" type="CollisionShape" parent="Enemy_bird"]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1.5, 0, 0, 0 )
+shape = SubResource( 4 )
+
+[node name="Rampa" type="StaticBody" parent="."]
+transform = Transform( 1, 0, 0, 0, 0.4, 0, 0, 0, 1, 10, 0, 0 )
+
+[node name="CollisionShape" type="CollisionShape" parent="Rampa"]
+shape = SubResource( 8 )
+
+[node name="MeshInstance" type="MeshInstance" parent="Rampa"]
+mesh = SubResource( 9 )
+material/0 = null
+
+[node name="Stone" type="StaticBody" parent="."]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 2, 0, 0 )
+
+[node name="CollisionShape" type="CollisionShape" parent="Stone"]
+transform = Transform( 0.5, 0, 0, 0, 1, 0, 0, 0, 0.5, 0, -0.5, 0 )
+shape = SubResource( 10 )
+
+[node name="Sprite3D" type="Sprite3D" parent="Stone"]
+transform = Transform( 3, 0, 0, 0, 3, 0, 0, 0, 2, 0, -0.6, 0 )
+texture = ExtResource( 3 )
